@@ -1,9 +1,38 @@
 {
-  "name": "page-downloader",
+  "name": "@arkv1/website-to-pdf",
   "version": "1.0.0",
-  "description": "Script to download page source code",
+  "description": "A command-line tool that converts web pages to PDF files using Puppeteer",
+  "main": "convert.js",
+  "scripts": {
+    "start": "node convert.js"
+  },
+  "keywords": [
+    "pdf",
+    "website",
+    "converter",
+    "puppeteer",
+    "cli",
+    "webpage",
+    "screenshot"
+  ],
+  "author": "",
+  "license": "MIT",
   "dependencies": {
-    "axios": "^1.6.2",
+    "puppeteer": "^22.8.2",
     "yargs": "^17.7.2"
-  }
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "bin": {
+    "website-to-pdf": "./convert.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yourusername/website-to-pdf.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yourusername/website-to-pdf/issues"
+  },
+  "homepage": "https://github.com/yourusername/website-to-pdf#readme"
 }
