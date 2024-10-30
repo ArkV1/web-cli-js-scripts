@@ -17,7 +17,7 @@ const argv = yargs
     })
     .option('output', {
         alias: 'o',
-        description: 'Output PDF filename',
+        description: 'Output PDF path (can include directory)',
         type: 'string',
         default: 'output.pdf'
     })
@@ -54,25 +54,31 @@ const argv = yargs
     })
     .argv;
 
-function ensureOutputDirectory() {
-    const outputDir = path.join(process.cwd(), 'output');
-    if (!fs.existsSync(outputDir)) {
-        fs.mkdirSync(outputDir);
+function ensureOutputDirectory(outputPath) {
+    const outputDir = path.dirname(path.resolve(outputPath));
+    try {
+        if (!fs.existsSync(outputDir)) {
+            fs.mkdirSync(outputDir, { recursive: true });
+        }
+        return outputDir;
+    } catch (error) {
+        console.error(`Failed to create output directory: ${error.message}`);
+        throw error;
     }
-    return outputDir;
 }
 
 async function convertWebsiteToPDF(url, outputPath, waitTime, format, landscape, scale, exclude) {
     let browser = null;
 
-    // Ensure output directory exists and create full path
-    const outputDir = ensureOutputDirectory();
-    const fullOutputPath = path.join(outputDir, path.basename(outputPath));
+    // Ensure output directory exists and get full path
+    const outputDir = ensureOutputDirectory(outputPath);
+    const fullOutputPath = path.resolve(outputPath);
 
     try {
         console.log('Launching browser...');
         browser = await puppeteer.launch({
-            headless: 'new'
+            headless: true,
+            args: ['--no-sandbox']
         });
 
         const page = await browser.newPage();

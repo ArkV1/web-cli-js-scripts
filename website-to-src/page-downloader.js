@@ -3,6 +3,17 @@ const axios = require('axios');
 const fs = require('fs/promises');
 const path = require('path');
 
+// Helper function to ensure output directory exists
+async function ensureOutputDirectory(outputPath) {
+    const outputDir = path.dirname(path.resolve(outputPath));
+    try {
+        await fs.mkdir(outputDir, { recursive: true });
+    } catch (error) {
+        console.error(`Failed to create output directory: ${error.message}`);
+        throw error;
+    }
+}
+
 // Configure CLI options
 const argv = yargs
     .command('* <url>', 'Download page source code', (yargs) => {
@@ -12,24 +23,24 @@ const argv = yargs
             demandOption: true
         });
     })
-    .option('o', {
-        alias: 'output',
-        describe: 'Output filename',
+    .option('output', {
+        alias: 'o',
+        describe: 'Output file path',
         type: 'string',
-        default: 'page-source.html'
+        default: 'output.html'
     })
     .help('h')
     .alias('h', 'help')
-    .example('node page-downloader https://example.com -o my-page.html')
+    .example('node page-downloader https://example.com -o path/to/my-page.html')
     .argv;
 
-async function downloadPageSource(url, outputFilename) {
+async function downloadPageSource(url, outputPath) {
     try {
         console.log(`Downloading from: ${url}`);
         
-        // Create output directory path
-        const outputDir = path.join(process.cwd(), 'output');
-        const outputPath = path.join(outputDir, outputFilename);
+        // Ensure output directory exists and get full path
+        await ensureOutputDirectory(outputPath);
+        const fullOutputPath = path.resolve(outputPath);
         
         // Configure axios to not follow redirects and only accept HTML
         const response = await axios.get(url, {
@@ -47,13 +58,10 @@ async function downloadPageSource(url, outputFilename) {
             throw new Error('Response is not HTML content');
         }
         
-        // Ensure the output directory exists
-        await fs.mkdir(outputDir, { recursive: true });
-        
         // Write the raw HTML content to the specified file
-        await fs.writeFile(outputPath, response.data);
+        await fs.writeFile(fullOutputPath, response.data);
         
-        console.log(`Successfully downloaded HTML source to: ${outputPath}`);
+        console.log(`Successfully downloaded HTML source to: ${fullOutputPath}`);
     } catch (error) {
         if (error.response) {
             console.error(`Failed to download page: ${error.response.status} ${error.response.statusText}`);
